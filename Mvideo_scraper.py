@@ -12,6 +12,7 @@ from selenium.webdriver.common.by import By
 
 mongo_client = MongoClient("127.0.0.1", 27017)
 db = mongo_client["mvideo_hit_of_sales"]
+# db[f"{datetime.now().day}.{datetime.now().month:0>2d}.{datetime.now().year}"].delete_many({})
 
 
 def save_good(data_base, collec, doc):
@@ -34,7 +35,7 @@ wait_time = WebDriverWait(browser, 10).\
 elements = browser.find_elements_by_xpath('//div[@class="section"]')
 for i, el in enumerate(elements):
     try:
-        locator = el.find_element_by_xpath(f'(//div[@class="h2 u-mb-0 u-ml-xs-20 u-font-normal"])[{i}]')
+        locator = el.find_element_by_xpath('.//div[@class="h2 u-mb-0 u-ml-xs-20 u-font-normal"]')
         if locator.text == "Хиты продаж":
             locator = el
             break
