@@ -20,23 +20,17 @@ class LmSpider(scrapy.Spider):
             yield response.follow(next_page, callback=self.parse)
 
     def parse_item(self, item_response: HtmlResponse):
-        name_of_features = item_response.xpath('//dl[@class="def-list"]/div/dt/text()').extract()
-        item_photos = item_response.xpath('//img[@slot="thumbs"]/@src').extract()
-        item_features = item_response.xpath('//dl[@class="def-list"]/div/dd/text()').extract()
-        item_name = item_response.xpath('//h1/text()').extract_first()
-        item_url = item_response.url
-        item_price = item_response.xpath('//uc-pdp-price-view//meta[@itemprop="price"]/@content').extract_first()
-        item_unit_price = item_response.xpath('//uc-pdp-price-view//span[@slot="unit"]/text()').extract_first()
-        item_unit_price_2 = \
-            item_response.xpath('//uc-pdp-price-view[@slot="second-price"]//span[@slot="unit"]/text()').extract_first()
-        item_price_2 = \
-            item_response.xpath('//uc-pdp-price-view[@slot="second-price"]//span[@slot="price"]/text()').extract_first()
-        return LeroyMerlinScraperItem(name_of_features=name_of_features,
-                                      item_photos=item_photos,
-                                      item_features=item_features,
-                                      item_url=item_url,
-                                      item_name=item_name,
-                                      item_price=item_price,
-                                      item_unit_price=item_unit_price,
-                                      item_unit_price_2=item_unit_price_2,
-                                      item_price_2=item_price_2)
+        loader = ItemLoader(item=LeroyMerlinScraperItem(), response=item_response)
+
+
+        loader.add_xpath("name_of_features", '//dl[@class="def-list"]/div/dt/text()')
+        loader.add_xpath("item_photos", '//img[@slot="thumbs"]/@src')
+        loader.add_xpath("item_features", '//dl[@class="def-list"]/div/dd/text()')
+        loader.add_xpath("item_name", '//h1/text()')
+        loader.add_value("item_url", item_response.url)
+        loader.add_xpath("item_price", '//uc-pdp-price-view//meta[@itemprop="price"]/@content')
+        loader.add_xpath("item_unit_price", '//uc-pdp-price-view//span[@slot="unit"]/text()')
+        loader.add_xpath("item_unit_price_2", '//uc-pdp-price-view[@slot="second-price"]//span[@slot="unit"]/text()')
+        loader.add_xpath("item_price_2", '//uc-pdp-price-view[@slot="second-price"]//span[@slot="price"]/text()')
+        yield loader.load_item()
+

@@ -13,9 +13,16 @@ import scrapy
 from itemadapter import ItemAdapter
 from scrapy.spiders import Spider
 from scrapy.pipelines.images import ImagesPipeline
+from pymongo import MongoClient
+from leroy_merlin_scraper.runner import request_item
 
 
 class LeroyMerlinScraperPipeline:
+
+    def __init__(self):
+        client = MongoClient("localhost", 27017)
+        self.data_base = client["LeroyMerlinDB"]
+
 
     def process_item(self, item, spider: Spider):
         good = dict()
@@ -24,13 +31,14 @@ class LeroyMerlinScraperPipeline:
         good["name"] = item["item_name"]
         good["price"] = {item["item_unit_price"]: item["item_price"],
                          item["item_unit_price_2"]: item["item_price_2"]}
-        return good
+        if self.data_base[request_item].count_documents({"item_url": good["item_url"]}) == 0:
+            self.data_base[request_item].insert_one(good)
+
 
     def features_parse(self, item):
         if len(item["name_of_features"]) == len(item["item_features"]):
             names = item["name_of_features"]
             features = item["item_features"]
-            features = [feat.strip() for feat in features]
             total_features = {feat[0]: feat[1] for feat in zip(names, features)}
             return total_features
 
